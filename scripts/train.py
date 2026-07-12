@@ -152,7 +152,9 @@ def train(
             epoch=iter(batches),
             optimizer=optimizer,
             scheduler=scheduler,
-            backprop_every=config['backprop_every'])
+            backprop_every=config['backprop_every'],
+            entropy_coef=config.get('entropy_coef', 0.01),
+            value_loss_coef=config.get('value_loss_coef', 0.5))
         if len(train_epoch.loss) > 0:
             print(f'Train loss: {sum(train_epoch.loss)/len(train_epoch.loss)}')
         else:
@@ -168,7 +170,9 @@ def train(
 
         dev_epoch = None
         if len(dev_files) > 0:
-            dev_epoch = model.eval_epoch(map(lambda x: collator([x]), dev_files))
+            dev_epoch = model.eval_epoch(map(lambda x: collator([x]), dev_files),
+                                         entropy_coef=config.get('entropy_coef', 0.01),
+                                         value_loss_coef=config.get('value_loss_coef', 0.5))
             if len(dev_epoch.loss) > 0:
                 print(f'Dev loss: {sum(dev_epoch.loss)/len(dev_epoch.loss)}')
             else:

@@ -10473,3 +10473,4 @@ Train mAP: 0.5336134364942998
 Train R-Precision: 0.3888888853703704
 {'depth': 6, 'num_heads': 2, 'dim': 64, 'head_dim': 16}
 {'depth': 6, 'num_heads': 2, 'dim': 64, 'head_dim': 16}
+{'depth': 6, 'num_heads': 2, 'dim': 64, 'head_dim': 16}

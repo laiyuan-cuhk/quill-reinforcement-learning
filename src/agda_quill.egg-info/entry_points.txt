@@ -1,0 +1,2 @@
+[console_scripts]
+agda-quill = quill.api.cli:main

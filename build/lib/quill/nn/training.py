@@ -32,6 +32,21 @@ class TrainCfg(TypedDict):
     test_files:         list[str]
     allow_self_loops:   bool
     half_precision:     bool
+    model_config:       ModelCfg
+    num_epochs:         int
+    warmup_epochs:      int
+    warmdown_epochs:    int
+    batch_size_s:       int
+    batch_size_h:       int
+    max_tokens:         int
+    backprop_every:     int
+    max_lr:             float
+    min_lr:             float
+    train_files:        list[str]
+    dev_files:          list[str]
+    test_files:         list[str]
+    allow_self_loops:   bool
+    half_precision:     bool
 
 
 @dataclass
@@ -134,17 +149,17 @@ class Trainer(Model):
 
         return self.to_stats(batch, predictions, loss)
 
-    def eval_batch(self, batch: Batch, entropy_coef: float, value_loss_coef: float) -> TrainStats:
-        predictions, loss = self.compute_loss(batch, entropy_coef=entropy_coef, value_loss_coef=value_loss_coef)
+    def eval_batch(self, batch: Batch) -> TrainStats:
+        predictions, loss = self.compute_loss(batch)
         return self.to_stats(batch, predictions, loss)
 
-    def eval_epoch(self, epoch: Iterator[Batch], entropy_coef: float, value_loss_coef: float) -> TrainStats:
+    def eval_epoch(self, epoch: Iterator[Batch]) -> TrainStats:
         self.eval()
         epoch_stats = TrainStats()
 
         with torch.no_grad():
             for i, batch in enumerate(epoch):
-                epoch_stats += self.eval_batch(batch, entropy_coef=entropy_coef, value_loss_coef=value_loss_coef)
+                epoch_stats += self.eval_batch(batch)
         return epoch_stats
 
     def infer_epoch(self, epoch: Iterator[Batch]) -> tuple[list[list[int]], list[set[int]]]:
