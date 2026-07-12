@@ -123,7 +123,7 @@ def train(
     epoch_size = train_sampler.itersize(config['batch_size_s'] * config['backprop_every'], config['batch_size_h'])
     collator = Collator(pad_value=-1, device=device, allow_self_loops=config['allow_self_loops'])
 
-    model = Trainer(config['model_config']).to(device)
+    model = Trainer(config['model_config'], config.get('rl_config')).to(device)
     optimizer = AdamW(params=model.parameters(), lr=1, weight_decay=1e-02)
     schedule = make_schedule(
         warmup_steps=config['warmup_epochs'] * epoch_size,
@@ -157,6 +157,10 @@ def train(
             print(f'Train loss: {sum(train_epoch.loss)/len(train_epoch.loss)}')
         else:
             print('Train loss: N/A')
+        if len(train_epoch.reward) > 0:
+            print(f'Train reward: {sum(train_epoch.reward)/len(train_epoch.reward)}')
+        else:
+            print('Train reward: N/A')
         if len(train_epoch.ap) > 0:
             print(f'Train mAP: {sum(train_epoch.ap)/len(train_epoch.ap)}')
         else:
@@ -173,6 +177,10 @@ def train(
                 print(f'Dev loss: {sum(dev_epoch.loss)/len(dev_epoch.loss)}')
             else:
                 print('Dev loss: N/A')
+            if len(dev_epoch.reward) > 0:
+                print(f'Dev reward: {sum(dev_epoch.reward)/len(dev_epoch.reward)}')
+            else:
+                print('Dev reward: N/A')
             if len(dev_epoch.ap) > 0:
                 print(f'Dev mAP: {sum(dev_epoch.ap) / len(dev_epoch.ap)}')
             else:

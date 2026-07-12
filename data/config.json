@@ -5,6 +5,13 @@
         "dim": 64,
         "head_dim": 16
     },
+    "rl_config": {
+        "num_samples": 8,
+        "entropy_coef": 0.01,
+        "use_baseline": true,
+        "reward_correct": 1.0,
+        "reward_wrong": 0.0
+    },
     "num_epochs": 1000,
     "warmup_epochs": 1,
     "warmdown_epochs": 0,

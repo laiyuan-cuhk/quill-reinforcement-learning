@@ -75,6 +75,29 @@ agda-quill query -file ./data/stdlib/Algebra.Construct.NaturalChoice.Min.json --
 
 ### 🤖 Train a model ...
 
+Quill is trained with **reinforcement learning** rather than a supervised loss.
+Premise selection is cast as a *contextual bandit*: for every hole the neural
+encoder acts as a **policy** that induces a categorical distribution over the
+in-scope lemmas, an **action** samples one of those lemmas, and the **reward**
+is `1` when the sampled lemma is a genuine premise (else `0`). The policy is
+optimised with the REINFORCE policy-gradient estimator using a per-hole reward
+baseline for variance reduction and an entropy bonus for exploration (see
+`/src/quill/nn/rl.py`). The RL hyper-parameters live under the `rl_config` key
+of `/data/config.json`:
+
+```json
+"rl_config": {
+    "num_samples": 8,
+    "entropy_coef": 0.01,
+    "use_baseline": true,
+    "reward_correct": 1.0,
+    "reward_wrong": 0.0
+}
+```
+
+Ranking metrics (mAP, R-precision) are still reported at evaluation time, and
+the `Train/Dev reward` line reports the policy's expected single-draw reward.
+
 #### ... on the original train/dev split 
 Adjust the training configuration file (`/data/config.json`) and run the training script (`/scripts/train.py`), after any necessary modifications.
 

@@ -9,3 +9,7 @@ data/image/*
 # Ignore all Python __pycache__ directories
 __pycache__/
 
+
+# Editable-install metadata
+src/*.egg-info/
+.venv/
