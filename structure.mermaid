@@ -13,9 +13,10 @@ flowchart TD
 
     D --> J[get_predictions]
 
-    subgraph Training["Training path"]
+    subgraph Training["Training path (REINFORCE)"]
         J --> K[compute_loss]
-        K --> L[infoNCE loss]
+        K --> L[reinforce_loss / policy gradient]
+        L --> L2[Categorical policy + reward + baseline]
         K --> M[TrainStats]
         D --> N[train_epoch]
         N --> O[train_batch]

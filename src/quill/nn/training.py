@@ -11,11 +11,13 @@ from dataclasses import dataclass
 
 from .model import ModelCfg, Model
 from .batching import Batch
-from .utils.ranking import infoNCE, evaluate_rankings, rank_candidates, to_dense_batch
+from .rl import RLCfg, DEFAULT_RL_CFG, reinforce_loss, expected_reward
+from .utils.ranking import evaluate_rankings, rank_candidates, to_dense_batch
 
 
 class TrainCfg(TypedDict):
     model_config:       ModelCfg
+    rl_config:          RLCfg
     num_epochs:         int
     warmup_epochs:      int
     warmdown_epochs:    int
@@ -35,22 +37,41 @@ class TrainCfg(TypedDict):
 @dataclass
 class TrainStats:
     loss:               tuple[float, ...] = ()
+    reward:             tuple[float, ...] = ()
     ap:                 tuple[float, ...] = ()
     rp:                 tuple[float, ...] = ()
 
     def __add__(self, other: TrainStats) -> TrainStats:
-        return TrainStats(loss=self.loss + other.loss, ap=self.ap + other.ap, rp=self.rp + other.rp)
+        return TrainStats(loss=self.loss + other.loss,
+                          reward=self.reward + other.reward,
+                          ap=self.ap + other.ap,
+                          rp=self.rp + other.rp)
 
 
 class Trainer(Model):
+    def __init__(self, config: ModelCfg, rl_config: RLCfg | None = None):
+        super().__init__(config)
+        self.rl_config: RLCfg = rl_config if rl_config is not None else dict(DEFAULT_RL_CFG)
+
     def compute_loss(self, batch: Batch) -> tuple[Tensor, Tensor]:
         predictions = self.get_predictions(batch)
-        return predictions, infoNCE(predictions, batch.premises.bool(), batch.edge_index)
+        loss = reinforce_loss(
+            scores=predictions,
+            targets=batch.premises.bool(),
+            edge_index=batch.edge_index,
+            num_samples=self.rl_config['num_samples'],
+            entropy_coef=self.rl_config['entropy_coef'],
+            use_baseline=self.rl_config['use_baseline'],
+            reward_correct=self.rl_config['reward_correct'],
+            reward_wrong=self.rl_config['reward_wrong'])
+        return predictions, loss
 
     def to_stats(self, batch: Batch, predictions: Tensor, loss: Tensor) -> TrainStats:
         zipped = tuple(zip(*evaluate_rankings(predictions, batch.edge_index[1], batch.premises)))
         ap, rp = zipped if zipped else ((), ())
+        reward = expected_reward(predictions, batch.premises.bool(), batch.edge_index)
         return TrainStats(loss=tuple(loss.tolist()),
+                          reward=tuple(reward.tolist()),
                           ap=ap,
                           rp=rp)
 
