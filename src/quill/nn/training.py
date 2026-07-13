@@ -70,7 +70,14 @@ class Trainer(Model):
     def to_stats(self, batch: Batch, predictions: Tensor, loss: Tensor) -> TrainStats:
         zipped = tuple(zip(*evaluate_rankings(predictions, batch.edge_index[1], batch.premises)))
         ap, rp = zipped if zipped else ((), ())
-        return TrainStats(loss=tuple(loss.tolist()),
+
+        loss_value = loss.detach().cpu()
+        if loss_value.ndim == 0:
+            loss_values = (float(loss_value.item()),)
+        else:
+            loss_values = tuple(float(x) for x in loss_value.tolist())
+
+        return TrainStats(loss=loss_values,
                           ap=ap,
                           rp=rp)
 
