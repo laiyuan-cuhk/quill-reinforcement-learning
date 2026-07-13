@@ -1,0 +1,27 @@
+flowchart TD
+    A[TokenizedFile] --> B[Collator]
+    B --> C[Batch]
+    C --> D[Model]
+
+    subgraph ModelCore["Model core"]
+        D --> D1[FileEncoder]
+        D1 --> D2[TermEncoder]
+        D1 --> D3[TokenEmbedding]
+        D --> D4[policy_head / value_head]
+        D --> D5[RMSNorm]
+    end
+
+    subgraph ReinforcementLearning["Reinforcement learning"]
+        D --> R1[Trainer.compute_loss]
+        R1 --> R2[policy loss + value loss]
+        R2 --> R3[reward from correct premises]
+        R3 --> R4[train_epoch / train_batch]
+        R4 --> R5[optimizer step]
+    end
+
+    subgraph Inference["Inference"]
+        D --> I1[Inferer]
+        I1 --> I2[select_premises]
+        I1 --> I3[precompute]
+        I2 --> I4[rank_candidates]
+    end
