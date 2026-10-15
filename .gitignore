@@ -1,6 +1,7 @@
 data/model.pt
 data/checkpoint.pt
 data/log.txt
+data/validate.log
 data/stdlib/*
 data/stdlib-*/
 data/stdlib.*
